@@ -1,4 +1,5 @@
 <script setup>
+import { useHead } from '#imports'
 import { ref, onMounted } from 'vue'
 import { useNuxtApp, useRouter } from '#app'
 import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
@@ -18,97 +19,20 @@ onMounted(async () => {
   phantom.value = await $phantom
 })
 
-async function connectPhantom() {
-  if (!phantom.value) {
-    alert('Phantom Wallet is not available. Please install it from https://phantom.app/')
-    return
-  }
-  try {
-    const response = await phantom.value.connect({ onlyIfTrusted: false })
-    publicWalletAddress.value = response.publicKey.toString()
-    console.log('Connected with Public Key:', publicWalletAddress.value)
-  } catch (error) {
-    console.error('Failed to connect Phantom Wallet:', error)
-  }
-}
-
-async function sendPayment() {
-  if (!phantom.value || !publicWalletAddress.value) {
-    alert('Please connect your Phantom Wallet first!')
-    return
-  }
-  try {
-    isSending.value = true
-
-    const { $solanaConnection } = useNuxtApp()
-    const senderPublicKey = new PublicKey(publicWalletAddress.value)
-    const receiverPublicKey = new PublicKey(receiverWalletAddress)
-
-    const transaction = new Transaction().add(
-      SystemProgram.transfer({
-        fromPubkey: senderPublicKey,
-        toPubkey: receiverPublicKey,
-        lamports: paymentAmount * 1e9, // Convert SOL to lamports
-      })
-    )
-
-    transaction.feePayer = senderPublicKey
-    const { blockhash } = await $solanaConnection.getRecentBlockhash()
-    transaction.recentBlockhash = blockhash
-
-    const signedTransaction = await phantom.value.signTransaction(transaction)
-    const signature = await $solanaConnection.sendRawTransaction(signedTransaction.serialize())
-    await $solanaConnection.confirmTransaction(signature, 'confirmed')
-
-    transactionSignature.value = signature
-    console.log(`Transaction Signature: ${signature}`)
-    
-    alert(`Payment of ${paymentAmount} SOL sent successfully! Transaction: ${signature}`)
-
-    setTimeout(async () => {
-      await verifyPaymentOnBackend(signature)
-    }, 10000)
-
-  } catch (error) {
-    console.error('Payment failed:', error)
-    alert('Payment failed. Please try again.')
-  } finally {
-    isSending.value = false
-  }
-}
-
-async function verifyPaymentOnBackend(signature) {
-  try {
-    const payload = {
-      senderWallet: publicWalletAddress.value,
-      expectedAmount: paymentAmount,
-      transactionHash: signature,
-    }
-    
-    console.log("Payload being sent to the server:", payload);
-
-    const response = await fetch('http://localhost:8080/verify-payment', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', 
-      body: JSON.stringify(payload)
-    })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      throw new Error(errorData.error || 'Verification failed')
-    }
-
-    const data = await response.json()
-    console.log("Payment verified successfully! Session data:", data)
-    localStorage.setItem('sessionData', JSON.stringify(data))
-    router.push('/LandingPage')
-    
-  } catch (error) {
-    console.error('Backend verification failed:', error)
-    alert('Payment verification failed on the server.')
-  }
-}
+useHead({
+  title: 'BitSnake',
+  meta: [
+    { charset: 'UTF-8' },
+    { name: 'viewport', content: 'width=device-width, initial-scale=1.0' }
+  ],
+  link: [
+    { rel: 'icon', href: '/favicon.ico' },
+    { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+    { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+    { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+    { rel: 'manifest', href: '/site.webmanifest' }
+  ]
+})
 </script>
 
 <template>
