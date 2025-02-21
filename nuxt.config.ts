@@ -22,6 +22,8 @@ export default defineNuxtConfig({
     resolve: {
       alias: {
         buffer: 'buffer/', // Fix alias issue with buffer
+
+        url: 'rollup-plugin-node-polyfills/polyfills/url',
       },
     },
   },

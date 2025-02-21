@@ -160,7 +160,7 @@ const play = async () => {
         class="mt-6 bg-success text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-green-700 transition"
         :disabled="isSending"
       >
-        {{ isSending ? 'Processing Payment...' : 'Pay 1 SOL & Join Game' }}
+        {{ isSending ? 'Processing Payment...' : 'Pay 0.3 SOL & Join Game' }}
       </button>
     </div>
   </div>
