@@ -19,6 +19,7 @@ export const useGameStore = defineStore({
       kills: 0,
       x: 0,
       y: 0
-    }
+    },
+    connect: false  // added connection status
   })
 })
