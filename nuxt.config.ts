@@ -1,7 +1,8 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
+import { defineNuxtConfig } from 'nuxt/config'
+
 export default defineNuxtConfig({
-  compatibilityDate: '2024-11-01',
   devtools: { enabled: true },
+  compatibilityDate: '2025-02-20',
 
   modules: [
     '@pinia/nuxt',          // State management with Pinia
@@ -21,12 +22,6 @@ export default defineNuxtConfig({
     resolve: {
       alias: {
         buffer: 'buffer/', // Fix alias issue with buffer
-      },
-    },
-    server: {
-      // Proxy API requests to another server during development
-      proxy: {
-        '/api': 'http://localhost:8080', // Proxy to Go backend
       },
     },
   },
