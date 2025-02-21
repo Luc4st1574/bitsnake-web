@@ -41,7 +41,7 @@ async function connectPhantom() {
   }
 }
 
-// Function to send 1 SOL payment.
+// Function to send SOL payment.
 async function sendPayment() {
   if (!phantom.value || !publicWalletAddress.value) {
     alert('Please connect your Phantom Wallet first!')
@@ -76,7 +76,7 @@ async function sendPayment() {
     
     alert(`Payment of ${paymentAmount} SOL sent successfully! Transaction: ${signature}`)
     
-    // Add a delay (10 seconds) before verifying payment on the backend
+    // Delay before verifying payment on the backend
     setTimeout(async () => {
       await verifyPaymentOnBackend(signature)
     }, 10000)
@@ -114,8 +114,10 @@ async function verifyPaymentOnBackend(signature) {
 
     const data = await response.json()
     console.log("Payment verified successfully! Session data:", data)
+    // Mark the session as paid
+    data.paid = true;
     localStorage.setItem('sessionData', JSON.stringify(data))
-    // Use the play() function to navigate into the game page.
+    // Navigate into the game page.
     await play()
     
   } catch (error) {

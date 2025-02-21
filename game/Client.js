@@ -9,13 +9,23 @@ const reconnectRoom = async () => {
   const lastRoomId = localStorage.getItem('lastRoomId');
   const lastSessionId = localStorage.getItem('lastSessionId');
   
-  // If lastSessionId is not a valid numeric id, ignore it.
+  // If lastSessionId is not valid, ignore it.
   if (!lastRoomId || !lastSessionId || lastSessionId === "uniqueUserId" || lastSessionId === "0") {
     return null;
   }
   
   try {
-    socket = new WebSocket(`${serverUrl}/ws/free/${lastRoomId}?user_id=${lastSessionId}&reconnect=true`);
+    // Determine match type from session data
+    const sessionDataStr = localStorage.getItem('sessionData');
+    let matchType = "free";
+    if (sessionDataStr) {
+      const sessionData = JSON.parse(sessionDataStr);
+      if (sessionData.paid) {
+        matchType = "paid";
+      }
+    }
+    
+    socket = new WebSocket(`${serverUrl}/ws/${matchType}/${lastRoomId}?user_id=${lastSessionId}&reconnect=true`);
 
     socket.onopen = () => {
       console.log('Reconnected successfully');
@@ -43,12 +53,18 @@ const joinRoom = async () => {
     // Retrieve session data from localStorage
     const sessionDataStr = localStorage.getItem('sessionData');
     let userId = "0"; // default fallback value
+    let matchType = "free"; // default match type
+
     if (sessionDataStr) {
       const sessionData = JSON.parse(sessionDataStr);
       userId = sessionData.userID ? sessionData.userID.toString() : "0";
+      // Use paid match type if session data indicates a paid session.
+      if (sessionData.paid) {
+        matchType = "paid";
+      }
     }
-    // Join with a new room using the numeric user id.
-    socket = new WebSocket(`${serverUrl}/ws/free/randomRoomId?user_id=${userId}`);
+    // Join with a new room using the numeric user id and the correct match type.
+    socket = new WebSocket(`${serverUrl}/ws/${matchType}/randomRoomId?user_id=${userId}`);
 
     socket.onopen = () => {
       console.log('Joined successfully');
