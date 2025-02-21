@@ -1,5 +1,5 @@
 import { Application } from 'pixi.js'
-import router from '@/router'
+import { useNuxtApp, useRouter } from '#app'
 import { useGameStore } from '../stores/game'
 import { log, styles } from './utils/log'
 
@@ -10,6 +10,8 @@ import Camera from './modules/Camera'
 let world = null
 let snakes = new Map()
 let foods = new Map()
+const router = useRouter()
+
 
 const getStates = async (app, room, gameStore) => {
   try {

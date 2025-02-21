@@ -1,6 +1,6 @@
 <script setup>
 import { reactive } from 'vue'
-import { useGameStore } from '~/src/stores/game'
+import { useGameStore } from '~/stores/game'
 import minimap from '@/assets/img/minimap.png'
 import point from '@/assets/img/point.png'
 

@@ -1,11 +1,13 @@
 <script setup>
-import router from '@/router'
+import { useNuxtApp, useRouter } from '#app'
 import { useGameStore } from '../stores/game'
 import DieButton from './DieButton.vue'
 import { leaveRoom } from '../game/Client'
 
 const gameStore = useGameStore()
 const player = gameStore.player
+
+const router = useRouter()
 
 function gameOver() {
   leaveRoom(gameStore)

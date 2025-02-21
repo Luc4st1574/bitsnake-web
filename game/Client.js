@@ -65,15 +65,6 @@ const joinRoom = async () => {
   }
 };
 
-// Function to exit the current room (disconnect from WebSocket)
-const exitRoom = () => {
-  if (!socket) return;
-  socket.close();
-  socket = null;
-  room = null;
-  console.log('Exited the room');
-};
-
 // Function to leave the current room (send leave signal to server)
 const leaveRoom = () => {
   if (!socket) return;

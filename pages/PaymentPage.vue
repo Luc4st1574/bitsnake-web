@@ -2,18 +2,22 @@
 import { ref, onMounted } from 'vue'
 import { useNuxtApp, useRouter } from '#app'
 import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
+import { useRoom } from '../game/Client'
+import { useGameStore } from '@/stores/game'
 
-// Reactive state variables
+// Reactive state variables for Phantom Wallet & payment
 const phantom = ref(null)
 const publicWalletAddress = ref('')
 const isSending = ref(false)
-// Remove sessionData from here if you plan to display it on another page
-// const sessionData = ref(null)
-const transactionSignature = ref('') // Store transaction signature
+const transactionSignature = ref('')
+
+// Additional state for game connection
+const loading = ref(false)
+const gameStore = useGameStore()
 
 // Receiver wallet and payment amount (matches Go backend)
 const receiverWalletAddress = 'D7LwfYCjLLCaeLTTijwBagFAmB3aPSm2Fx8K2DzvqLrz'
-const paymentAmount = 1.0  // Ensure it's a float
+const paymentAmount = 0.3 // Ensure it's a float
 
 const router = useRouter()
 
@@ -67,7 +71,7 @@ async function sendPayment() {
     const signature = await $solanaConnection.sendRawTransaction(signedTransaction.serialize())
     await $solanaConnection.confirmTransaction(signature, 'confirmed')
 
-    transactionSignature.value = signature  // Store the transaction signature
+    transactionSignature.value = signature
     console.log(`Transaction Signature: ${signature}`)
     
     alert(`Payment of ${paymentAmount} SOL sent successfully! Transaction: ${signature}`)
@@ -94,13 +98,12 @@ async function verifyPaymentOnBackend(signature) {
       transactionHash: signature,
     }
     
-    // Log the payload being sent to the server.
     console.log("Payload being sent to the server:", payload);
 
     const response = await fetch('http://localhost:8080/verify-payment', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      credentials: 'include', 
+      credentials: 'include',
       body: JSON.stringify(payload)
     })
 
@@ -111,15 +114,28 @@ async function verifyPaymentOnBackend(signature) {
 
     const data = await response.json()
     console.log("Payment verified successfully! Session data:", data)
-    // Save the session data (for example, to localStorage)
     localStorage.setItem('sessionData', JSON.stringify(data))
-    // Redirect to a new page (e.g., /dashboard)
-    router.push('/dashboard')
+    // Use the play() function to navigate into the game page.
+    await play()
     
   } catch (error) {
     console.error('Backend verification failed:', error)
     alert('Payment verification failed on the server.')
   }
+}
+
+// Dedicated function to join the game.
+const play = async () => {
+  loading.value = true
+  try {
+    await useRoom()
+    // Mark that the game store is connected.
+    gameStore.connect = true
+    router.push('/GamePage')
+  } catch (e) {
+    console.log(e)
+  }
+  loading.value = false
 }
 </script>
 

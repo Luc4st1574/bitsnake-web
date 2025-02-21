@@ -1,6 +1,6 @@
 import * as PIXI from 'pixi.js'
 import Head from './Snake/Head'
-import { getColors, getAttackColors } from '../utils/Game'
+import { getColors, getAttackColors } from '../utils/game'
 import * as Maths from '../utils/math'
 
 export class Snake {

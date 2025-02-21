@@ -1,7 +1,7 @@
+// After
 import { defineStore } from 'pinia'
 
-export const useGameStore = defineStore({
-  id: 'game',
+export const useGameStore = defineStore('game', {
   state: () => ({
     room: {
       stageName: null,
@@ -20,6 +20,6 @@ export const useGameStore = defineStore({
       x: 0,
       y: 0
     },
-    connect: false  // added connection status
+    connect: false
   })
 })
