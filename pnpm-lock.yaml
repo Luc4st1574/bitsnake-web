@@ -20,6 +20,9 @@ importers:
       color2k:
         specifier: ^2.0.3
         version: 2.0.3
+      eventemitter3:
+        specifier: 3.1.0
+        version: 3.1.0
       nuxt:
         specifier: ^3.15.4
         version: 3.15.4(@parcel/watcher@2.5.1)(@types/node@22.13.4)(bufferutil@4.0.9)(db0@0.2.4)(ioredis@5.5.0)(magicast@0.3.5)(rollup@4.34.8)(sass-embedded@1.85.0)(terser@5.39.0)(typescript@5.7.3)(utf-8-validate@5.0.10)(vite@6.1.1(@types/node@22.13.4)(jiti@2.4.2)(sass-embedded@1.85.0)(terser@5.39.0)(yaml@2.7.0))(yaml@2.7.0)
@@ -1934,6 +1937,9 @@ packages:
   event-target-shim@5.0.1:
     resolution: {integrity: sha512-i/2XbnSz/uxRCU6+NdVJgKWDTM427+MqYbkQzD321DuCQJUqOuJKIA0IM2+W2xtYHdKOmZ4dR6fExsd4SXL+WQ==}
     engines: {node: '>=6'}
+
+  eventemitter3@3.1.0:
+    resolution: {integrity: sha512-ivIvhpq/Y0uSjcHDcOIccjmYjGLcP09MFGE7ysAwkAvkXfpZlC985pH2/ui64DKazbTW/4kN3yqozUxlXzI6cA==}
 
   eventemitter3@4.0.7:
     resolution: {integrity: sha512-8guHBZCwKnFhYdHr2ysuRWErTwhoN2X8XELRlrRwpmfeY2jjuUN4taQMsULKUVo1K4DvZl+0pgfyoysHxvmvEw==}
@@ -6168,6 +6174,8 @@ snapshots:
   etag@1.8.1: {}
 
   event-target-shim@5.0.1: {}
+
+  eventemitter3@3.1.0: {}
 
   eventemitter3@4.0.7: {}
 

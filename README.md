@@ -73,3 +73,5 @@ bun run preview
 ```
 
 Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for more information.
+
+TODO: ADD NITRO FOR WEBSOCKET CONETION, DELETE POLIFYLL AND REMOVE PIXI WRAPER AND SEND PAYMENT LOGIC TO a store file

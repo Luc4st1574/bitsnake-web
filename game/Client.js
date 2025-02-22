@@ -102,16 +102,6 @@ export const leaveRoom = () => {
 
 // Main function to either reconnect to an existing room or join a new one
 export const useRoom = async () => {
-  // Ensure that if the stored room data does not match the current session, it is cleared.
-  const sessionDataStr = localStorage.getItem('sessionData');
-  if (sessionDataStr) {
-    const sessionData = JSON.parse(sessionDataStr);
-    if (!localStorage.getItem('lastSessionId') || localStorage.getItem('lastSessionId') !== sessionData.userID.toString()) {
-      localStorage.removeItem('lastRoomId');
-      localStorage.removeItem('lastSessionId');
-    }
-  }
-  
   if (!room) room = await reconnectRoom();
   if (!room) room = await joinRoom();
   if (!room) throw new Error('Could not join a room');
