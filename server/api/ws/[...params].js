@@ -1,37 +1,43 @@
 // server/api/ws/[...params].js
-import { Server } from 'ws';
+import { WebSocketServer } from 'ws';
 
-let wss; // Global WebSocket server instance
+let wss;
+
+// Attach the upgrade listener only once.
+if (!globalThis.__wsUpgradeListenerAttached) {
+  // globalThis.__wsUpgradeListenerAttached is our flag.
+  globalThis.__wsUpgradeListenerAttached = true;
+  // When the server starts, attach one upgrade listener.
+  // Here we assume event.res.socket.server will be available from the first call.
+  // If necessary, you can also attach this listener in a separate plugin.
+  addEventListener('fetch', (event) => {
+    // This listener is a no-op; it's here just to make sure our global upgrade listener is attached.
+  });
+}
 
 export default defineEventHandler((event) => {
-  // Only proceed if this is a WebSocket upgrade request.
+  // Only process upgrade requests.
   if (event.req.headers.upgrade !== 'websocket') {
     return 'This endpoint only supports WebSocket connections.';
   }
 
-  // Parse dynamic URL segments.
-  // Expected URL: /api/ws/{matchType}/{roomId}?user_id=...&reconnect=...
-  const params = event.context.params.params; // Array of path segments
-  const [matchType = 'free', roomId = 'defaultRoom'] = params || [];
-  
-  // Extract additional query parameters.
-  const urlObj = new URL(event.req.url, `http://${event.req.headers.host}`);
-  const userId = urlObj.searchParams.get('user_id');
-  const reconnect = urlObj.searchParams.get('reconnect');
-
-  console.log(
-    `New WS connection: matchType=${matchType}, roomId=${roomId}, user_id=${userId}, reconnect=${reconnect}`
-  );
-
-  // Initialize the WebSocket server once.
+  // Initialize the WebSocket server if it hasn't been created yet.
   if (!wss) {
-    wss = new Server({ noServer: true });
-    wss.on('connection', (socket) => {
-      console.log(`WebSocket client connected for user ${userId}.`);
+    wss = new WebSocketServer({ noServer: true });
+    wss.on('connection', (socket, req) => {
+      // Parse the URL to extract dynamic parameters.
+      const urlObj = new URL(req.url, `http://${req.headers.host}`);
+      // Example URL: /api/ws/paid/randomRoomId?user_id=1&reconnect=true
+      const segments = urlObj.pathname.split('/').filter(Boolean); // e.g. ["api", "ws", "paid", "randomRoomId"]
+      const matchType = segments[2] || 'free';
+      const roomId = segments[3] || 'defaultRoom';
+      const userId = urlObj.searchParams.get('user_id');
+
+      console.log(`New WS connection: matchType=${matchType}, roomId=${roomId}, user_id=${userId}`);
 
       socket.on('message', (message) => {
         console.log(`Received from user ${userId}: ${message}`);
-        // Example: echo back the message.
+        // Echo the message back.
         socket.send(`Echo: ${message}`);
       });
 
@@ -39,16 +45,16 @@ export default defineEventHandler((event) => {
         console.log(`Socket for user ${userId} closed.`);
       });
     });
-  }
 
-  // Attach an upgrade listener to handle the WebSocket upgrade.
-  event.res.socket.server.on('upgrade', (req, socket, head) => {
-    if (req.url.startsWith(`/api/ws/${matchType}/${roomId}`)) {
-      wss.handleUpgrade(req, socket, head, (ws) => {
-        wss.emit('connection', ws, req);
-      });
-    } else {
-      socket.destroy();
-    }
-  });
+    // Attach the upgrade listener to the underlying HTTP server once.
+    event.res.socket.server.on('upgrade', (req, socket, head) => {
+      if (req.url.startsWith('/api/ws/')) {
+        wss.handleUpgrade(req, socket, head, (ws) => {
+          wss.emit('connection', ws, req);
+        });
+      } else {
+        socket.destroy();
+      }
+    });
+  }
 });
