@@ -1,21 +1,22 @@
+// client.js
 let socket = null;
 let room = null;
 
-// WebSocket server URL based on the Go server
-const serverUrl = `${import.meta.env.VITE_WS_SERVER}`;
+// Read the WS server URL from the environment variable.
+const serverUrl = import.meta.env.VITE_WS_SERVER;
 
-// Function to reconnect to the last room using stored IDs
+// Function to reconnect to the last room using stored IDs.
 const reconnectRoom = async () => {
   const lastRoomId = localStorage.getItem('lastRoomId');
   const lastSessionId = localStorage.getItem('lastSessionId');
-  
-  // If lastSessionId is not valid, ignore it.
+
+  // If lastRoomId or lastSessionId are not valid, skip reconnection.
   if (!lastRoomId || !lastSessionId || lastSessionId === "uniqueUserId" || lastSessionId === "0") {
     return null;
   }
-  
+
   try {
-    // Determine match type from session data
+    // Determine match type from session data.
     const sessionDataStr = localStorage.getItem('sessionData');
     let matchType = "free";
     if (sessionDataStr) {
@@ -24,8 +25,9 @@ const reconnectRoom = async () => {
         matchType = "paid";
       }
     }
-    
-    socket = new WebSocket(`${serverUrl}/ws/${matchType}/${lastRoomId}?user_id=${lastSessionId}&reconnect=true`);
+
+    // Connect to the Nitro WS endpoint using dynamic path segments.
+    socket = new WebSocket(`${serverUrl}/${matchType}/${lastRoomId}?user_id=${lastSessionId}&reconnect=true`);
 
     socket.onopen = () => {
       console.log('Reconnected successfully');
@@ -47,13 +49,13 @@ const reconnectRoom = async () => {
   }
 };
 
-// Function to join a new room
+// Function to join a new room.
 const joinRoom = async () => {
   try {
-    // Retrieve session data from localStorage
+    // Retrieve session data from localStorage.
     const sessionDataStr = localStorage.getItem('sessionData');
-    let userId = "0"; // default fallback value
-    let matchType = "free"; // default match type
+    let userId = "0"; // Default fallback.
+    let matchType = "free"; // Default match type.
 
     if (sessionDataStr) {
       const sessionData = JSON.parse(sessionDataStr);
@@ -63,8 +65,8 @@ const joinRoom = async () => {
         matchType = "paid";
       }
     }
-    // Join with a new room using the numeric user id and the correct match type.
-    socket = new WebSocket(`${serverUrl}/ws/${matchType}/randomRoomId?user_id=${userId}`);
+    // Connect using a new room ID. (Replace 'randomRoomId' with your room-generation logic.)
+    socket = new WebSocket(`${serverUrl}/${matchType}/randomRoomId?user_id=${userId}`);
 
     socket.onopen = () => {
       console.log('Joined successfully');
@@ -80,7 +82,7 @@ const joinRoom = async () => {
 
     room = { id: 'randomRoomId', sessionId: userId };
 
-    // Save the room and session details to localStorage
+    // Save the room and session details to localStorage.
     localStorage.setItem('lastRoomId', room.id);
     localStorage.setItem('lastSessionId', room.sessionId);
 
@@ -91,7 +93,7 @@ const joinRoom = async () => {
   }
 };
 
-// Function to leave the current room (send leave signal to server)
+// Function to leave the current room (send leave signal to server).
 export const leaveRoom = () => {
   if (!socket) return;
   socket.send(JSON.stringify({ action: 'leave' }));
@@ -100,7 +102,7 @@ export const leaveRoom = () => {
   console.log('Left the room');
 };
 
-// Main function to either reconnect to an existing room or join a new one
+// Main function to either reconnect to an existing room or join a new one.
 export const useRoom = async () => {
   if (!room) room = await reconnectRoom();
   if (!room) room = await joinRoom();
@@ -108,5 +110,5 @@ export const useRoom = async () => {
   return room;
 };
 
-// Also export joinRoom in case other modules need it
+// Also export joinRoom in case other modules need it.
 export { joinRoom };

@@ -3,6 +3,12 @@ import { defineNuxtConfig } from 'nuxt/config'
 export default defineNuxtConfig({
   devtools: { enabled: true },
   compatibilityDate: '2025-02-20',
+  
+  runtimeConfig: {
+    public: {
+      VITE_WS_SERVER: process.env.VITE_WS_SERVER || 'ws://localhost:8080/api/ws'
+    }
+  },
 
   modules: [
     '@pinia/nuxt',          // State management with Pinia
