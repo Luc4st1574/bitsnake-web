@@ -1,6 +1,6 @@
 <template>
   <div class="animate-fade-in animate-duration-3000 mb-4 flex flex-col text-center">
-    <span class="logo-color bg-clip-text font-readex-pro text-7xl font-semibold tracking-tight text-transparent antialiased outline-4 md:text-8xl">
+    <span class="logo-color font-readex-pro text-7xl font-semibold tracking-tight antialiased outline-4 md:text-8xl">
       bitsnake
     </span>
     <span class="-mt-2 text-right text-sm text-primary">ALPHA</span>
@@ -9,10 +9,12 @@
 
 <style scoped>
 .logo-color {
-  /* Use a linear gradient as the background */
   background: linear-gradient(45deg, #d246e5, #4f46e5, #9333ea);
   background-size: 300%;
-  /* Animate the gradient by moving its position */
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  color: transparent;
   animation: flow 5s linear infinite alternate;
 }
 
