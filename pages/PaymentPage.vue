@@ -2,24 +2,18 @@
 import { ref, onMounted } from 'vue'
 import { useNuxtApp, useRouter } from '#app'
 import { PublicKey, Transaction, SystemProgram } from '@solana/web3.js'
-import { useRoom } from '../game/Client'
 import { useGameStore } from '@/stores/game'
 
-// Reactive state variables for Phantom Wallet & payment
 const phantom = ref(null)
 const publicWalletAddress = ref('')
 const isSending = ref(false)
 const transactionSignature = ref('')
 
-// Additional state for game connection
-const loading = ref(false)
-const gameStore = useGameStore()
-
-// Receiver wallet and payment amount (matches Go backend)
 const receiverWalletAddress = 'D7LwfYCjLLCaeLTTijwBagFAmB3aPSm2Fx8K2DzvqLrz'
-const paymentAmount = 0.3 // Ensure it's a float
+const paymentAmount = 0.3
 
 const router = useRouter()
+const gameStore = useGameStore()
 
 onMounted(async () => {
   const { $phantom } = useNuxtApp()
@@ -94,7 +88,7 @@ async function verifyPaymentOnBackend(signature) {
   try {
     const payload = {
       senderWallet: publicWalletAddress.value,
-      expectedAmount: paymentAmount, // Send as float
+      expectedAmount: paymentAmount,
       transactionHash: signature,
     }
     
@@ -114,30 +108,20 @@ async function verifyPaymentOnBackend(signature) {
 
     const data = await response.json()
     console.log("Payment verified successfully! Session data:", data)
-    // Mark the session as paid
+    // Mark the session as paid and save session data.
     data.paid = true;
     localStorage.setItem('sessionData', JSON.stringify(data))
-    // Navigate into the game page.
-    await play()
+    // Set connection flag to false since room is not connected yet.
+    gameStore.connect = false
+    // Also store session data in the game store if needed.
+    gameStore.sessionData = data
+    // Navigate to LoadingPage to wait for the room.
+    router.push('/LoadingPage')
     
   } catch (error) {
     console.error('Backend verification failed:', error)
     alert('Payment verification failed on the server.')
   }
-}
-
-// Dedicated function to join the game.
-const play = async () => {
-  loading.value = true
-  try {
-    await useRoom()
-    // Mark that the game store is connected.
-    gameStore.connect = true
-    router.push('/GamePage')
-  } catch (e) {
-    console.log(e)
-  }
-  loading.value = false
 }
 </script>
 

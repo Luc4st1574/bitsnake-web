@@ -31,13 +31,19 @@ onMounted(() => {
 
 // --- Game Setup ---
 const gameStore = useGameStore()
+// Log session data from the store for debugging.
+console.log("Session data from game store:", gameStore.sessionData)
+
 const connected = ref(false)
 const pixiInstance = ref(null)
 
 onMounted(async () => {
   try {
+    // Initialize the room connection (this returns the room object)
     const room = await useRoom()
-    // useSketch now returns a function that creates a Pixi.Application
+    console.log("Room initialized:", room)
+
+    // Create the PixiJS application using your sketch function.
     const sketch = useSketch(room)
     pixiInstance.value = sketch() // Initialize PixiJS application
 
