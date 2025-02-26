@@ -42,7 +42,7 @@ async function sendPayment() {
     return
   }
   try {
-    isSending.value = true
+    isSending.value = true  // immediately switch to processing mode
 
     const { $solanaConnection } = useNuxtApp()
     const senderPublicKey = new PublicKey(publicWalletAddress.value)
@@ -73,13 +73,12 @@ async function sendPayment() {
     // Delay before verifying payment on the backend
     setTimeout(async () => {
       await verifyPaymentOnBackend(signature)
-    }, 5000)
+    }, 10000)
 
   } catch (error) {
     console.error('Payment failed:', error)
     alert('Payment failed. Please try again.')
-  } finally {
-    isSending.value = false
+    isSending.value = false // revert to normal view if payment fails
   }
 }
 
@@ -108,25 +107,29 @@ async function verifyPaymentOnBackend(signature) {
 
     const data = await response.json()
     console.log("Payment verified successfully! Session data:", data)
-    // Mark the session as paid and save session data.
     data.paid = true;
     localStorage.setItem('sessionData', JSON.stringify(data))
-    // Set connection flag to false since room is not connected yet.
-    gameStore.connect = false
-    // Also store session data in the game store if needed.
-    gameStore.sessionData = data
-    // Navigate to LoadingPage to wait for the room.
+    // Navigate to LoadingPage (room initialization)
     router.push('/LoadingPage')
     
   } catch (error) {
     console.error('Backend verification failed:', error)
     alert('Payment verification failed on the server.')
+    isSending.value = false // revert to normal view on failure
   }
 }
 </script>
 
 <template>
-  <div class="flex flex-col items-center justify-center min-h-screen bg-light text-dark p-4">
+  <!-- When payment is processing, show only the processing message -->
+  <div v-if="isSending" class="processing-wrapper">
+    <p class="processing-text">
+      Payment Processing<span class="dots"></span>
+    </p>
+  </div>
+  
+  <!-- Normal view: show wallet connection and payment button only when not processing -->
+  <div v-else class="flex flex-col items-center justify-center min-h-screen bg-light text-dark p-4">
     <div v-if="!publicWalletAddress">
       <button 
         @click="connectPhantom" 
@@ -135,7 +138,6 @@ async function verifyPaymentOnBackend(signature) {
         Connect to Phantom Wallet
       </button>
     </div>
-
     <div v-if="publicWalletAddress" class="mt-6 text-center">
       <p class="text-2xl font-semibold text-primary">Welcome to the Solana Network</p>
       <p class="mt-2 text-lg font-mono bg-gray-100 px-4 py-2 rounded-lg shadow-sm">
@@ -144,10 +146,39 @@ async function verifyPaymentOnBackend(signature) {
       <button 
         @click="sendPayment" 
         class="mt-6 bg-success text-white px-6 py-3 rounded-lg text-lg font-semibold shadow-md hover:bg-green-700 transition"
-        :disabled="isSending"
       >
-        {{ isSending ? 'Processing Payment...' : 'Pay 0.3 SOL & Join Game' }}
+        Pay 0.3 SOL &amp; Join Game
       </button>
     </div>
   </div>
 </template>
+
+<style scoped>
+.processing-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  background-color: var(--color-light, #f8fafc);
+  color: var(--color-primary, #9333ea);
+}
+
+.processing-text {
+  font-size: 2.5rem;
+  font-weight: bold;
+}
+
+.dots::after {
+  content: '';
+  display: inline-block;
+  width: 1em;
+  animation: ellipsis 1.5s infinite;
+}
+
+@keyframes ellipsis {
+  0%   { content: ''; }
+  33%  { content: '.'; }
+  66%  { content: '..'; }
+  100% { content: '...'; }
+}
+</style>

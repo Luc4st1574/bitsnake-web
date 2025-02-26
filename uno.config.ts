@@ -19,13 +19,13 @@ export default defineConfig({
       dark: '#000000',
     },
     fontFamily: {
-      'readex-pro': ['Readex Pro', 'sans-serif'],
+      // Use Google Fonts "Poppins" as the primary font.
       poppins: ['Poppins', 'sans-serif'],
     },
   },
   safelist: [
     'text-primary', 'text-secondary', 'text-success', 'text-danger', 'text-warning', 'text-info', 'text-light', 'text-dark',
     'bg-primary', 'bg-secondary', 'bg-success', 'bg-danger', 'bg-warning', 'bg-info', 'bg-light', 'bg-dark',
-    'font-readex-pro', 'font-poppins',
+    'font-poppins',
   ],
 })

@@ -6,7 +6,7 @@ export default defineNuxtConfig({
   
   runtimeConfig: {
     public: {
-      VITE_WS_SERVER: process.env.VITE_WS_SERVER || 'ws://localhost:8080/api/ws'
+      VITE_WS_SERVER: process.env.VITE_WS_SERVER || 'ws://localhost:8080'
     }
   },
 

@@ -1,13 +1,27 @@
 <script setup>
-import { useRouter } from 'vue-router'
+import { useHead, useRouter } from '#app'
 import BaseFooter from '@/components/BaseFooter.vue'
 import GamePlayButton from '@/components/GamePlayButton.vue'
 import BaseLogo from '@/components/BaseLogo.vue'
 
+
 const router = useRouter()
 
+// When user clicks "Play", go to PaymentPage (paid mode)
 const redirectToPayment = () => {
   router.push('/PaymentPage')
+}
+
+// When user clicks "Try", create a free session and go directly to LoadingPage
+const redirectToPractice = () => {
+  // Create a dummy free session (free mode)
+  const freeSession = {
+    paid: false,
+    // Generate a pseudo-unique ID (here we use the current timestamp modulo some number)
+    userID: (Date.now() % 1000000).toString()
+  }
+  localStorage.setItem('sessionData', JSON.stringify(freeSession))
+  router.push('/LoadingPage')
 }
 </script>
 
@@ -19,6 +33,10 @@ const redirectToPayment = () => {
       <div class="flex flex-col items-center">
         <GamePlayButton class="mt-4" @click="redirectToPayment">
           Play
+        </GamePlayButton>
+        <!-- New Try button for practice mode -->
+        <GamePlayButton class="mt-2" @click="redirectToPractice">
+          Try
         </GamePlayButton>
       </div>
     </div>
