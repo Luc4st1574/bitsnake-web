@@ -6,17 +6,14 @@ let room = null;
 let heartbeatInterval = null;
 
 // Read the WS server URL from environment variable.
+// In this option, VITE_WS_SERVER already includes '/ws', e.g. 'ws://localhost:8080/ws'
 const serverUrl = import.meta.env.VITE_WS_SERVER;
 
 // Utility function to create a ReconnectingWebSocket instance with common settings.
 const createSocket = (url) => {
-  // Reconnection options can be adjusted as needed.
   const options = {
-    // Maximum number of reconnection attempts before giving up.
     maxRetries: 5,
-    // How long to wait (in ms) before trying to reconnect.
     reconnectInterval: 3000,
-    // Enable debug logging for development.
     debug: true,
   };
 
@@ -24,13 +21,12 @@ const createSocket = (url) => {
 
   rws.onopen = () => {
     console.log('Connected successfully to:', url);
-    // Start a heartbeat to keep the connection alive.
     if (heartbeatInterval) clearInterval(heartbeatInterval);
     heartbeatInterval = setInterval(() => {
       if (rws.readyState === WebSocket.OPEN) {
         rws.send(JSON.stringify({ type: 'ping' }));
       }
-    }, 30000); // send a ping every 30 seconds
+    }, 30000);
   };
 
   rws.onclose = () => {
@@ -68,6 +64,7 @@ const reconnectRoom = async () => {
       }
     }
 
+    // Build the URL using serverUrl without adding '/ws' again.
     const url = `${serverUrl}/${matchType}/${lastRoomId}?user_id=${lastSessionId}&reconnect=true`;
     socket = createSocket(url);
 
@@ -94,6 +91,7 @@ const joinRoom = async () => {
       }
     }
 
+    // Build the URL without duplicating '/ws'
     const url = `${serverUrl}/${matchType}/randomRoomId?user_id=${userId}`;
     socket = createSocket(url);
 
