@@ -6,7 +6,14 @@ const serverUrl = 'http://localhost:8080';
 let socket = null;
 let room = null;
 
-export const joinRoom = (roomId, matchType, userId) => {
+/**
+ * Join a room with all required parameters.
+ * @param {string} roomId - The room identifier.
+ * @param {string} matchType - The match type ("paid" or "free").
+ * @param {string|number} userId - The user identifier.
+ * @param {boolean} [reconnect=false] - Whether this is a reconnection.
+ */
+export const joinRoom = (roomId, matchType, userId, reconnect = false) => {
   socket = io(serverUrl, {
     path: '/socket.io',
     transports: ['websocket'],
@@ -18,8 +25,8 @@ export const joinRoom = (roomId, matchType, userId) => {
 
   socket.on('connect', () => {
     console.log(`Connected to Socket.IO server with id: ${socket.id}`);
-    // Emit joinRoom event to join the desired room
-    socket.emit('joinRoom', roomId, userId);
+    // Emit joinRoom event with four parameters: roomId, userId, matchType, reconnect flag.
+    socket.emit('joinRoom', roomId, userId, matchType, reconnect);
   });
 
   socket.on('disconnect', (reason) => {
@@ -32,6 +39,9 @@ export const joinRoom = (roomId, matchType, userId) => {
   return room;
 };
 
+/**
+ * Attempt to rejoin the last room.
+ */
 export const reconnectRoom = () => {
   const lastRoomId = localStorage.getItem('lastRoomId');
   const lastUserId = localStorage.getItem('lastUserId');
@@ -43,9 +53,13 @@ export const reconnectRoom = () => {
     const sessionData = JSON.parse(sessionDataStr);
     if (sessionData.paid) matchType = 'paid';
   }
-  return joinRoom(lastRoomId, matchType, lastUserId);
+  // Pass reconnect=true when rejoining.
+  return joinRoom(lastRoomId, matchType, lastUserId, true);
 };
 
+/**
+ * Leave the current room.
+ */
 export const leaveRoom = () => {
   if (socket) {
     socket.emit('leaveRoom');
