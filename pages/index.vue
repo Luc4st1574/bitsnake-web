@@ -4,16 +4,23 @@ import BaseFooter from '@/components/BaseFooter.vue'
 import GamePlayButton from '@/components/GamePlayButton.vue'
 import BaseLogo from '@/components/BaseLogo.vue'
 
-
 const router = useRouter()
 
 // When user clicks "Play", go to PaymentPage (paid mode)
 const redirectToPayment = () => {
+  // Clear last room info so we do NOT reconnect
+  localStorage.removeItem('lastRoomId')
+  localStorage.removeItem('lastUserId')
+
   router.push('/PaymentPage')
 }
 
 // When user clicks "Try", create a free session and go directly to LoadingPage
 const redirectToPractice = () => {
+  // Clear last room info so we do NOT reconnect
+  localStorage.removeItem('lastRoomId')
+  localStorage.removeItem('lastUserId')
+
   // Create a dummy free session (free mode)
   const freeSession = {
     paid: false,

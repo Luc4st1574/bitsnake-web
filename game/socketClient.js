@@ -29,6 +29,11 @@ export const joinRoom = (roomId, matchType, userId, reconnect = false) => {
     socket.emit('joinRoom', roomId, userId, matchType, reconnect);
   });
 
+  // Listen for patch event and log its payload
+  socket.on('patch', (data) => {
+    console.log('Received patch:', data);
+  });
+
   socket.on('disconnect', (reason) => {
     console.log('Disconnected from Socket.IO server:', reason);
   });
