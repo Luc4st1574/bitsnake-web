@@ -1,63 +1,57 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { useRoom, socket } from '@/game/Client'  // adjust path as needed
+import { joinRoom, socket, reconnectRoom } from '@/game/socketClient'
 import { useGameStore } from '@/stores/game'
 
 const router = useRouter()
 const gameStore = useGameStore()
 
-// Load session data from localStorage if not already in the store.
-if (!gameStore.sessionData) {
-  const stored = localStorage.getItem('sessionData')
-  if (stored) {
-    gameStore.setSessionData(JSON.parse(stored))
-  }
-}
-
 const loadingMessage = ref("Waiting for other players to join...")
+const currentPlayers = ref(0)
+const minPlayers = computed(() => (gameStore.sessionData && gameStore.sessionData.paid) ? 5 : 1)
 
-// currentPlayers from the game store (defaulting to 0 if not set)
-const currentPlayers = computed(() => gameStore.room.playersCount || 0)
+// Handler for when the server signals the room is ready
+const handleRoomReady = (data) => {
+  console.log("Received room_ready event:", data)
+  router.push('/GamePage')
+}
 
-// Compute the minimum number of players based on session data.
-// For paid matches, the backend requires 5 players; for free matches, only 1.
-const minPlayers = computed(() => {
-  return gameStore.sessionData && gameStore.sessionData.paid ? 5 : 1
-})
-
-const handleMessage = (event) => {
-  try {
-    const data = JSON.parse(event.data)
-    if (data.action === "room_ready") {
-      // When the server signals that the room is ready, navigate to GamePage.
-      router.push('/GamePage')
-    } else if (data.action === "update_status") {
-      loadingMessage.value = data.message
-      if (data.playersCount !== undefined) {
-        currentPlayers.value = data.playersCount
-      }
-    }
-  } catch (e) {
-    console.error("Failed to parse WebSocket message:", e)
+// Handler for status updates from the server (like player count)
+const handleStatusUpdate = (data) => {
+  console.log("Received update_status event:", data)
+  loadingMessage.value = data.message
+  if (data.playersCount !== undefined) {
+    currentPlayers.value = data.playersCount
   }
 }
 
-onMounted(async () => {
-  // Ensure sessionData is loaded (if not already done above)
-  if (!gameStore.sessionData) {
-    const stored = localStorage.getItem('sessionData')
-    if (stored) {
-      gameStore.setSessionData(JSON.parse(stored))
+onMounted(() => {
+  // Attempt to reconnect first; if that fails, join a new room.
+  let room = reconnectRoom()
+  if (!room) {
+    const sessionDataStr = localStorage.getItem('sessionData')
+    if (!sessionDataStr) {
+      router.push('/')
+      return
     }
+    const sessionData = JSON.parse(sessionDataStr)
+    const userId = sessionData.userID
+    // Here we use a placeholder room ID "randomRoomId"—replace with your room logic as needed.
+    room = joinRoom('randomRoomId', sessionData.paid ? 'paid' : 'free', userId)
   }
-  // Initialize the room connection.
-  await useRoom()
-  socket.addEventListener('message', handleMessage)
+
+  if (socket) {
+    socket.on('room_ready', handleRoomReady)
+    socket.on('update_status', handleStatusUpdate)
+  }
 })
 
 onBeforeUnmount(() => {
-  socket.removeEventListener('message', handleMessage)
+  if (socket) {
+    socket.off('room_ready', handleRoomReady)
+    socket.off('update_status', handleStatusUpdate)
+  }
 })
 </script>
 
@@ -65,7 +59,6 @@ onBeforeUnmount(() => {
   <div class="flex flex-col items-center justify-center h-screen bg-light text-dark">
     <h1 class="text-3xl font-bold mb-4">Waiting Room</h1>
     <p class="text-lg">{{ loadingMessage }}</p>
-    <!-- Show current players vs. minimum required -->
     <p class="text-lg">
       Players in match: {{ currentPlayers }} / {{ minPlayers }} required to start
     </p>

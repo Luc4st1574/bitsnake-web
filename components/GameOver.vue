@@ -2,7 +2,7 @@
 import { useNuxtApp, useRouter } from '#app'
 import { useGameStore } from '../stores/game'
 import DieButton from './DieButton.vue'
-import { leaveRoom } from '../game/Client'
+import { leaveRoom } from '../game/socketClient'
 
 const gameStore = useGameStore()
 const player = gameStore.player

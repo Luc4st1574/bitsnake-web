@@ -12,7 +12,7 @@ import GameOver from '../components/GameOver.vue'
 import GameStageLabel from '../components/GameStageLabel.vue'
 
 import { useSketch } from '../game/Sketch'
-import { useRoom, exitRoom } from '../game/Client'
+import { useRoom, exitRoom } from '../game/socketClient'
 
 // --- Session Check ---
 const sessionData = ref(null)
