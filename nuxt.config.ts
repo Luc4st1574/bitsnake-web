@@ -1,4 +1,3 @@
-// nuxt.config.ts
 import { defineNuxtConfig } from 'nuxt/config'
 
 export default defineNuxtConfig({
@@ -7,15 +6,15 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      // This URL now includes the '/ws' prefix.
-      VITE_WS_SERVER: process.env.VITE_WS_SERVER || 'ws://localhost:8080/ws'
+      // Use HTTP URL so that the Socket.IO client connects correctly.
+      VITE_WS_SERVER: process.env.VITE_WS_SERVER || 'http://localhost:8080'
     }
   },
 
   modules: [
     '@pinia/nuxt',          // State management with Pinia
     '@unocss/nuxt',         // Utility-first CSS framework (UnoCSS)
-    'vue3-pixi-nuxt',       // Integrating PixiJS with Nuxt 3
+    'vue3-pixi-nuxt'        // Integrating PixiJS with Nuxt 3
   ],
 
   plugins: [

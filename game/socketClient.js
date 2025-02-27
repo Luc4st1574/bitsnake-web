@@ -1,8 +1,6 @@
-// socketClient.js
 import { io } from 'socket.io-client';
 
-// Adjust the server URL to match your Fiber server host/protocol.
-// Here, we use http://localhost:8080 since our server runs on that address.
+// Use an HTTP URL here so the client connects via HTTP and then upgrades.
 const serverUrl = 'http://localhost:8080';
 
 let socket = null;
